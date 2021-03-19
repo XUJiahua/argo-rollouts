@@ -132,6 +132,7 @@ func PromoteRollout(rolloutIf clientset.RolloutInterface, name string, skipCurre
 
 func getPatches(rollout *v1alpha1.Rollout, skipCurrentStep, skipAllStep, full bool) ([]byte, []byte, []byte) {
 	var specPatch, statusPatch, unifiedPatch []byte
+	// switch case = if, elseif, elseif, else
 	switch {
 	case skipCurrentStep:
 		_, index := replicasetutil.GetCurrentCanaryStep(rollout)
@@ -143,6 +144,7 @@ func getPatches(rollout *v1alpha1.Rollout, skipCurrentStep, skipAllStep, full bo
 		statusPatch = []byte(fmt.Sprintf(setCurrentStepIndex, *index))
 		unifiedPatch = statusPatch
 	case skipAllStep:
+		// deprecated, use --full instead
 		statusPatch = []byte(fmt.Sprintf(setCurrentStepIndex, len(rollout.Spec.Strategy.Canary.Steps)))
 		unifiedPatch = statusPatch
 	case full:
@@ -151,6 +153,7 @@ func getPatches(rollout *v1alpha1.Rollout, skipCurrentStep, skipAllStep, full bo
 		}
 	default:
 		if rollout.Spec.Paused {
+			// 0.9 use spec.paused
 			specPatch = []byte(unpausePatch)
 		}
 		if len(rollout.Status.PauseConditions) > 0 {
